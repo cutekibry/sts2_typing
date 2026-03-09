@@ -69,10 +69,60 @@ public partial class ChatPanel : CanvasLayer
     Control? _activePreview;
     string? _activePreviewMeta;
 
+    Font? _sharpFont;
+
+    // Returns a high-quality version of Godot's default fallback font.
+    // FontFile entries get per-font oversampling scaled to the window/viewport ratio;
+    // SystemFont entries (used for CJK and other OS-provided glyphs) get MSDF enabled
+    // so they render as resolution-independent vector shapes instead of upscaled bitmaps.
+    // A final SystemFont+MSDF entry is appended as a safety net for any characters
+    // that aren't covered by the built-in fallback chain.
+    Font BuildSharpFont()
+    {
+        var windowSize = DisplayServer.WindowGetSize();
+        float viewportWidth = (float)ProjectSettings.GetSetting("display/window/size/viewport_width");
+        float oversampling = windowSize.X / viewportWidth * 2f;
+
+        var root = WithSharpSettings(ThemeDB.Singleton.FallbackFont, oversampling);
+
+        var fallbacks = root.Fallbacks;
+        fallbacks.Add(new SystemFont { MultichannelSignedDistanceField = true, AllowSystemFallback = true });
+        root.Fallbacks = fallbacks;
+
+        return root;
+    }
+
+    // Duplicates a font and applies oversampling / MSDF to it and every entry in its
+    // fallback chain so that all glyphs, regardless of which font actually provides
+    // them, benefit from sharp rendering.
+    static Font WithSharpSettings(Font source, float oversampling)
+    {
+        var dup = (Font)source.Duplicate();
+
+        switch (dup)
+        {
+            case FontFile ff:
+                ff.Oversampling = oversampling;
+                break;
+            case SystemFont sf:
+                sf.MultichannelSignedDistanceField = true;
+                break;
+        }
+
+        var fallbacks = dup.Fallbacks;
+        for (int i = 0; i < fallbacks.Count; i++)
+            if (fallbacks[i] is Font f)
+                fallbacks[i] = WithSharpSettings(f, oversampling);
+        dup.Fallbacks = fallbacks;
+
+        return dup;
+    }
+
     public override void _Ready()
     {
         Layer = 100;
         EmojiData.LoadAll();
+        _sharpFont = BuildSharpFont();
         BuildUi();
         HideInput();
         CloseEmojiPopup();
@@ -355,7 +405,7 @@ public partial class ChatPanel : CanvasLayer
         panel.AddThemeStyleboxOverride("panel", style);
     }
 
-    static void ApplyInputStyle(LineEdit input)
+    void ApplyInputStyle(LineEdit input)
     {
         var normal = new StyleBoxFlat
         {
@@ -378,6 +428,7 @@ public partial class ChatPanel : CanvasLayer
         input.AddThemeStyleboxOverride("focus", normal);
         input.AddThemeColorOverride("font_color", Colors.White);
         input.AddThemeColorOverride("font_placeholder_color", PlaceholderColor);
+        if (_sharpFont != null) input.AddThemeFontOverride("font", _sharpFont);
         input.AddThemeFontSizeOverride("font_size", FontSize);
     }
 
@@ -567,6 +618,7 @@ public partial class ChatPanel : CanvasLayer
             SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
             AutowrapMode = TextServer.AutowrapMode.WordSmart
         };
+        if (_sharpFont != null) label.AddThemeFontOverride("normal_font", _sharpFont);
         label.AddThemeFontSizeOverride("normal_font_size", FontSize);
         label.AddThemeColorOverride("default_color", Colors.White);
 
