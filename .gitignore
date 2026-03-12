@@ -6,6 +6,10 @@
 
 # 游戏本体文件（受版权保护）
 /Slay the Spire 2/
+/Slay the Spire 2_unzip/
+
+# 发布产物
+*.zip
 
 # IDE 个人配置
 .cursor/

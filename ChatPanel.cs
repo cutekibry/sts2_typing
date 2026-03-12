@@ -36,6 +36,7 @@ public partial class ChatPanel : CanvasLayer
     const int EmojiDisplaySize = 20;
     const int EmojiButtonSize = 22;
     const int EmojiColumns = 9;
+    const float NetworkCheckInterval = 1.0f;
 
     static readonly Color BgColor = new(0.05f, 0.05f, 0.1f, 0.75f);
     static readonly Color InputBgColor = new(0.08f, 0.08f, 0.15f, 0.9f);
@@ -68,6 +69,9 @@ public partial class ChatPanel : CanvasLayer
 
     Control? _activePreview;
     string? _activePreviewMeta;
+
+    float _networkCheckTimer;
+    NCharacterSelectScreen? _cachedCharScreen;
 
     Font? _sharpFont;
 
@@ -128,6 +132,7 @@ public partial class ChatPanel : CanvasLayer
         CloseEmojiPopup();
         _chatContainer.Modulate = new Color(1, 1, 1, 0);
         _faded = true;
+        ManageNetworkLifecycle();
     }
 
     public override void _ExitTree()
@@ -138,7 +143,12 @@ public partial class ChatPanel : CanvasLayer
 
     public override void _Process(double delta)
     {
-        ManageNetworkLifecycle();
+        _networkCheckTimer -= (float)delta;
+        if (_networkCheckTimer <= 0f)
+        {
+            _networkCheckTimer = NetworkCheckInterval;
+            ManageNetworkLifecycle();
+        }
 
         if (!_inputActive)
         {
@@ -1061,6 +1071,7 @@ public partial class ChatPanel : CanvasLayer
         }
         _netService = null;
         _handlerRegistered = false;
+        _cachedCharScreen = null;
     }
 
     INetGameService? TryGetNetService()
@@ -1071,7 +1082,7 @@ public partial class ChatPanel : CanvasLayer
             && rm.NetService.IsConnected)
             return rm.NetService;
 
-        var charScreen = FindCharacterSelectScreen();
+        var charScreen = FindCharacterSelectScreenCached();
         if (charScreen?.Lobby?.NetService is { } lobbyNet
             && lobbyNet.Type.IsMultiplayer()
             && lobbyNet.IsConnected)
@@ -1080,13 +1091,20 @@ public partial class ChatPanel : CanvasLayer
         return null;
     }
 
-    static NCharacterSelectScreen? FindCharacterSelectScreen()
+    NCharacterSelectScreen? FindCharacterSelectScreenCached()
     {
+        if (_cachedCharScreen is not null
+            && GodotObject.IsInstanceValid(_cachedCharScreen)
+            && _cachedCharScreen.IsInsideTree())
+            return _cachedCharScreen;
+
         var game = NGame.Instance;
         if (game is null) return null;
         var scene = game.RootSceneContainer?.CurrentScene;
         if (scene is null) return null;
-        return FindChildOfType<NCharacterSelectScreen>(scene);
+
+        _cachedCharScreen = FindChildOfType<NCharacterSelectScreen>(scene);
+        return _cachedCharScreen;
     }
 
     static T? FindChildOfType<T>(Node root) where T : class
