@@ -13,7 +13,9 @@
 
   <ItemGroup>
     <Compile Remove="Slay the Spire 2\**" />
+    <Compile Remove="sts2_beta\**" />
     <None Remove="Slay the Spire 2\**" />
+    <None Remove="sts2_beta\**" />
   </ItemGroup>
 
     <ItemGroup>
