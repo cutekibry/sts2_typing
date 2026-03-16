@@ -32,6 +32,8 @@ An in-game chat mod for [Slay the Spire 2](https://store.steampowered.com/app/64
    ```
 3. Launch the game and enable the mod in the Mod menu
 
+**0.99 beta (public-beta branch):** The mod uses the new manifest format. Put `typing.json` and `typing.dll` in the same subfolder (e.g. `Mods/typing/`). No `.pck` is required for this mod.
+
 ## Building from Source
 
 **Requirements**
@@ -45,7 +47,7 @@ An in-game chat mod for [Slay the Spire 2](https://store.steampowered.com/app/64
 1. Clone this repository
 2. Edit the game path reference in `typing.csproj` if needed
 3. Run `dotnet build`
-4. Export via Godot or copy the `.pck` / `.dll` to the Mods folder manually
+4. Copy `typing.dll` and `typing.json` into a mod subfolder (e.g. `Mods/typing/`). The build target copies both automatically when `Sts2Dir` is set. For 0.99 beta, only the JSON manifest and DLL are needed (no PCK).
 
 ## Item Link Format
 
@@ -100,6 +102,8 @@ Links are encoded as `{{type:id}}` in message text and rendered as styled intera
    ```
 3. 启动游戏，在 Mod 菜单中启用
 
+**0.99 beta（public-beta 分支）：** 使用新 manifest 格式，将 `typing.json` 与 `typing.dll` 放在同一子目录（如 `Mods/typing/`）即可，本 mod 不需要 `.pck`。
+
 ## 从源码构建
 
 **环境要求**
@@ -113,7 +117,7 @@ Links are encoded as `{{type:id}}` in message text and rendered as styled intera
 1. 克隆本仓库
 2. 按需修改 `typing.csproj` 中的游戏路径引用
 3. 执行 `dotnet build`
-4. 通过 Godot 导出，或将 `.pck` / `.dll` 手动复制到 Mods 文件夹
+4. 将 `typing.dll` 和 `typing.json` 复制到同一 mod 子目录（如 `Mods/typing/`）。配置好 `Sts2Dir` 后构建会自动复制；0.99 beta 只需 manifest 与 DLL，无需 PCK。
 
 ## 物品链接格式
 
