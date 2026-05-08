@@ -59,11 +59,11 @@ public static class ChatItemLink
 {
     static readonly StringComparer ItemNameComparer = StringComparer.CurrentCultureIgnoreCase;
     static readonly Regex LinkPattern = new(
-        @"\{\{(card|potion|relic|power):([A-Z0-9_]+\.[A-Z0-9_]+)(?::(\d+))?\}\}",
+        @"\{\{(card|potion|relic|power):([A-Z0-9_-]+\.[A-Z0-9_-]+)(?::(\d+))?\}\}",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     static readonly Regex PowerPattern = new(
-        @"\{\{power:([A-Z0-9_]+\.[A-Z0-9_]+):(-?\d+)\|(.+?)\|([0-9A-Fa-f]{6,8})(?:\|(.*?))?\}\}",
+        @"\{\{power:([A-Z0-9_-]+\.[A-Z0-9_-]+):(-?\d+)\|(.+?)\|([0-9A-Fa-f]{6,8})(?:\|(.*?))?\}\}",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     static readonly Regex TargetPattern = new(
