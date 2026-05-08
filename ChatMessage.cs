@@ -14,6 +14,9 @@ public struct ChatMessage : INetMessage, IPacketSerializable
 
     public LogLevel LogLevel => LogLevel.Info;
 
+    public bool ShouldBuffer => true;
+
+
     public void Serialize(PacketWriter writer)
     {
         writer.WriteString(text ?? string.Empty);
